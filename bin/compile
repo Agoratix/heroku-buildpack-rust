@@ -81,7 +81,7 @@ fi
 # Record our Rust build environment configuration in an export file, in
 # case another buildpack needs it to build Ruby gems that use Rust or
 # something like that.
-cat <<EOF > $BP_DIR/export
+EXPORT_ENV_VAR=$(cat <<EOF
 # Our rustup installation.
 export RUSTUP_HOME="$CACHE_DIR/multirust"
 
@@ -92,6 +92,11 @@ export CARGO_HOME="$CACHE_DIR/cargo"
 # Include binaries installed by cargo and rustup in our path.
 PATH="\$CARGO_HOME/bin:\$PATH"
 EOF
+)
+
+echo "$EXPORT_ENV_VAR" > $BP_DIR/export
+mkdir -p $BUILD_DIR/.profile.d
+echo "$EXPORT_ENV_VAR" > $BUILD_DIR/.profile.d/rust.sh
 
 # Read our build environment back in and evaluate it so that we can use it.
 . $BP_DIR/export
@@ -150,3 +155,4 @@ if [ $RUST_INSTALL_DIESEL -eq 1 ]; then
   cargo install diesel_cli $DIESEL_FLAGS || echo "already installed"
   cp $(which diesel) target/release/
 fi
+
